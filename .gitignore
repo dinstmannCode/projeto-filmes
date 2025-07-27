@@ -1,5 +1,14 @@
-node_modules/
-vendor/
+# Laravel
+/vendor
+/node_modules
+/storage
 .env
-storage/
+
+# Vite
+frontend/dist
+
+# Docker volumes
 docker-compose.override.yml
+
+# Logs
+*.log
