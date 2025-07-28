@@ -25,6 +25,11 @@ export async function fetchPopularMovies(pages = 1) {
     allMovies.push(...response.data.results);
   }
 
+    for (let i = allMovies.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allMovies[i], allMovies[j]] = [allMovies[j], allMovies[i]];
+  }
+  
   return allMovies;
 }
 
@@ -37,6 +42,7 @@ export async function addFavoriteMovie(movie) {
     title: movie.title,
     poster_path: movie.poster_path,
     vote_average: movie.vote_average,
+    genres: movie.genres,
   });
 }
 
@@ -44,7 +50,9 @@ export async function addFavoriteMovie(movie) {
  * Busca favoritos do backend
  */
 export async function getFavoriteMovies() {
-  const response = await axios.get(`${BACKEND_BASE_URL}/movies/favorites`);
+  const response = await axios.get(`${BACKEND_BASE_URL}/movies/favorites`, {    
+  });
+
   return response.data;
 }
 

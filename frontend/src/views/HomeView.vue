@@ -1,3 +1,26 @@
+<template>
+  <Navbar v-model="searchQuery" />
+  <div class="max-w-7xl mx-auto px-4 py-4 pt-28">
+    <div v-if="filteredMovies.length === 0" class="text-center text-gray-400 mt-10">
+      Nenhum filme encontrado! Que tal procurar outro título?
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
+      <MovieCard
+        v-for="movie in filteredMovies"
+        :key="movie.id"
+        :movie="movie"
+        :isFavorite="isInFavorites(movie.id)"
+        @favorite="addToFavorites"
+      />
+    </div>
+
+    <div v-if="loading" class="text-center text-purple-400 mt-6 animate-pulse">
+      Carregando mais filmes...
+    </div>
+  </div>
+</template>
+
 <script setup>
 import Navbar from '../components/Navbar.vue'
 import MovieCard from '../components/MovieCard.vue'
@@ -8,7 +31,7 @@ const searchQuery = ref('')
 const movies = ref([])
 const page = ref(1)
 const loading = ref(false)
-const favorites = ref([]) // ✅ declarando os favoritos
+const favorites = ref([]) 
 
 const filteredMovies = computed(() => {
   if (!searchQuery.value) return movies.value
@@ -42,7 +65,7 @@ const addToFavorites = async (movie) => {
       poster_path: movie.poster_path,
       vote_average: movie.vote_average,
     })
-    await fetchFavorites() // ✅ atualiza a lista local após adicionar
+    await fetchFavorites() 
     console.log('Favorito adicionado com sucesso')
   } catch (error) {
     console.error('Erro ao adicionar favorito:', error)
@@ -71,26 +94,3 @@ const handleScroll = () => {
   }
 }
 </script>
-
-<template>
-  <Navbar v-model="searchQuery" />
-  <div class="max-w-7xl mx-auto px-4 py-4 pt-28">
-    <div v-if="filteredMovies.length === 0" class="text-center text-gray-400 mt-10">
-      Nenhum filme encontrado! Que tal procurar outro título?
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
-      <MovieCard
-        v-for="movie in filteredMovies"
-        :key="movie.id"
-        :movie="movie"
-        :isFavorite="isInFavorites(movie.id)"
-        @favorite="addToFavorites"
-      />
-    </div>
-
-    <div v-if="loading" class="text-center text-purple-400 mt-6 animate-pulse">
-      Carregando mais filmes...
-    </div>
-  </div>
-</template>
