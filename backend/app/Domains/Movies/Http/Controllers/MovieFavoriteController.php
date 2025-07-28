@@ -3,6 +3,7 @@
 namespace App\Domains\Movies\Http\Controllers;
 
 use App\Domains\Movies\Models\MovieFavorite;
+use App\Domains\Movies\Services\TmdbService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -13,12 +14,20 @@ class MovieFavoriteController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
+     * 
      */
+    protected $tmdbService;
+
+    public function __construct(TmdbService $tmdbService)
+    {
+        $this->tmdbService = $tmdbService;
+    }
 
     public function index()
     {
-        $favorites = MovieFavorite::all();
-        return response()->json($favorites);
+        $favoritesWithGenres = $this->tmdbService->getPopularMovies(1); // Fetching genres for favorites);
+        
+        return response()->json($favoritesWithGenres);
     }
 
     public function store(Request $request)
@@ -28,6 +37,7 @@ class MovieFavoriteController extends Controller
             'title' => 'required|string',
             'poster_path' => 'nullable|string',
             'vote_average' => 'nullable|numeric',
+            'genres' => 'nullable|array',
         ]);
 
         $favorite = MovieFavorite::create($data);
