@@ -13,22 +13,26 @@ class TmdbService
         $this->apiKey = config('services.tmdb.key');
     }
 
-    public function getPopularMovies(): array
+    public function getPopularMovies(int $maxPages = 5): array
     {
-        $response = Http::get('https://api.themoviedb.org/3/movie/popular', [
-            'api_key' => $this->apiKey,
-            'language' => 'pt-BR',
-            'page' => 1,
-        ]);
 
-        if ($response->successful()) {
-            return $response->json()['results'] ?? [];
-        }
-        // Handle the case where the request fails
-        if ($response->failed()) {
-            throw new \Exception('Failed to fetch popular movies from TMDB');
-        }
+        $allMovies = [];
 
-        return [];
+        for ($page = 1; $page <= $maxPages; $page++) {
+            $response = Http::get('https://api.themoviedb.org/3/movie/popular', [
+                'api_key' => $this->apiKey,
+                'language' => 'pt-BR',
+                'page' => $page
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $allMovies = array_merge($allMovies, $data['results']);
+            } else {
+                break; 
+            }
+        }        
+
+        return $allMovies;
     }
 }
