@@ -5,7 +5,9 @@
       Nenhum filme encontrado! Que tal procurar outro título?
     </div>
 
+    <!-- TODO: retirar funcao isInFavorites e adicionar a propriedade isFavorite que vem do back -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
+      
       <MovieCard
         v-for="movie in filteredMovies"
         :key="movie.id"
@@ -72,9 +74,12 @@ const addToFavorites = async (movie) => {
   }
 }
 
+//TODO: remover funcao do front e colocar no back consultando o banco de dados
 const isInFavorites = (id) => {
   return favorites.value.some(fav => fav.tmdb_id === id.toString())
 }
+
+//
 
 onMounted(async () => {
   favorites.value = await getFavoriteMovies();

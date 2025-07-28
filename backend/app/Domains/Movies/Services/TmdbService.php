@@ -36,6 +36,8 @@ class TmdbService
 
         foreach ($allMovies as &$movie) { $movie['genres'] = implode(', ', $movie['genres']);}
 
+        // TODO: implementar propriedade favorite = boolean
+
         return $allMovies;
     }
 

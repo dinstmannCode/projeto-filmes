@@ -1,5 +1,5 @@
 <template>
-  <Navbar v-model="searchQuery" :showSearch="false" />
+  <Navbar :showSearch="false" />
   <div class="max-w-7xl mx-auto px-4 py-4 pt-28">
     <h1 class="flex mx-auto text-3xl font-bold mt-8 mb-8 text-king-purple uppercase">Meus filmes favoritos</h1>
 
@@ -71,6 +71,7 @@ const openModal = (movie) => {
   selectedMovie.value = movie
 }
 
+// TODO: verificar o porque nao esta passando o id do filme para remover
 const removeFavorite = async () => {
   try {
     await deleteFavoriteMovie(selectedMovie.value.tmdb_id)
