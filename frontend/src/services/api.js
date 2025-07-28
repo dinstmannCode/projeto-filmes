@@ -47,3 +47,7 @@ export async function getFavoriteMovies() {
   const response = await axios.get(`${BACKEND_BASE_URL}/movies/favorites`);
   return response.data;
 }
+
+export async function deleteFavoriteMovie(tmdb_id) {
+  return axios.delete(`${BACKEND_BASE_URL}/movies/favorites/${tmdb_id}`);
+}
