@@ -2,6 +2,7 @@
 
 namespace App\Domains\Movies\Services;
 
+use App\Domains\Movies\Models\MovieFavorite;
 use Illuminate\Support\Facades\Http;
 
 class TmdbService
@@ -13,7 +14,7 @@ class TmdbService
         $this->apiKey = config('services.tmdb.key');
     }
 
-    public function getPopularMovies(int $maxPages = 5): array
+    public function getPopularMovies(int $maxPages = 1): array
     {
         $genres = $this->getGenres();
 
@@ -34,9 +35,23 @@ class TmdbService
             }
         }
 
-        foreach ($allMovies as &$movie) { $movie['genres'] = implode(', ', $movie['genres']);}
+        foreach ($allMovies as &$movie) {
+            $movie['genres'] = implode(', ', $movie['genres']);
+        }
 
         return $allMovies;
+    }
+
+    public function getPopularMoviesWithFavorites(int $maxPages = 5): array
+    {
+        $popularMovies = $this->getPopularMovies($maxPages);
+        $favoriteIds = MovieFavorite::pluck('tmdb_id')->toArray();
+
+        foreach ($popularMovies as &$movie) {
+            $movie['is_favorite'] = in_array($movie['id'], $favoriteIds);
+        }
+
+        return $popularMovies;
     }
 
     public function getGenres(): array
@@ -67,5 +82,30 @@ class TmdbService
             return $movie;
         }, $movies);
     }
-}
 
+    public function getFavoriteMoviesWithGenres(): array
+    {
+        $favorites = MovieFavorite::all();
+        $genres = $this->getGenres();
+
+        $favoriteMovies = [];
+
+        foreach ($favorites as $fav) {
+            $movie = $fav->toArray();
+
+            if (!empty($movie['genre_ids'])) {
+                $movie['genres'] = array_map(function ($id) use ($genres) {
+                    return $genres[$id] ?? '';
+                }, $movie['genre_ids']);
+            }
+
+            $movie['genres'] = implode(', ', $movie['genres'] ?? []);
+
+            $movie['is_favorite'] = true;
+
+            $favoriteMovies[] = $movie;
+        }
+
+        return $favoriteMovies;
+    }
+}
