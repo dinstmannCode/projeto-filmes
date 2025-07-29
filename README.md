@@ -1,4 +1,4 @@
-# Projeto Filmes - Teste Técnico Full Stack Júnior
+# Projeto Filmes
 
 A aplicação consiste em um catálogo de filmes que consome dados da API TMDB, com funcionalidades de busca e favoritos. O backend foi desenvolvido com Laravel e o frontend com Vue 3.
 
