@@ -8,54 +8,40 @@ const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BACKEND_BASE_URL = 'http://localhost:8000/api';
 
 /**
- * Busca filmes populares da TMDB (paginação limitada)
+ * Busca todos os filmes
  */
-export async function fetchPopularMovies(pages = 1) {
-  const allMovies = [];
-
-  for (let page = 1; page <= pages; page++) {
-    const response = await axios.get(`${TMDB_BASE_URL}/movie/popular`, {
-      params: {
-        api_key: TMDB_API_KEY,
-        language: 'pt-BR',
-        page,
-      },
-    });
-
-    allMovies.push(...response.data.results);
-  }
-
-    for (let i = allMovies.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [allMovies[i], allMovies[j]] = [allMovies[j], allMovies[i]];
-  }
-  
-  return allMovies;
+export async function fetchPopularMoviesWithFavoriteStatus(page = 1) {
+  const response = await axios.get(`${BACKEND_BASE_URL}/movies/popular-with-favorites`, {
+    params: { page }
+  })
+  return response.data
 }
-
 /**
  * Envia favorito pro backend
  */
 export async function addFavoriteMovie(movie) {
-  return axios.post(`${BACKEND_BASE_URL}/movies/favorites`, {
+  return axios.post(`${BACKEND_BASE_URL}/movies/add-favorites`, {
     tmdb_id: movie.tmdb_id,
     title: movie.title,
     poster_path: movie.poster_path,
     vote_average: movie.vote_average,
     genres: movie.genres,
+    genre_ids: movie.genre_ids
   });
 }
 
 /**
- * Busca favoritos do backend
+ * Busca favoritos do backend para favoritos
  */
 export async function getFavoriteMovies() {
-  const response = await axios.get(`${BACKEND_BASE_URL}/movies/favorites`, {    
-  });
-
+  const response = await axios.get(`${BACKEND_BASE_URL}/movies/add-favorites`);
+  
   return response.data;
 }
 
+/**
+ *  Deleta favorito do backend
+ */
 export async function deleteFavoriteMovie(tmdb_id) {
   return axios.delete(`${BACKEND_BASE_URL}/movies/favorites/${tmdb_id}`);
 }

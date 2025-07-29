@@ -20,7 +20,7 @@
       </div>
 
       <div class="p-4 pt-0 z-10">
-        <!-- Botão de favorito -->
+        <!-- botao de favorito -->
         <button @click="handleFavorite" :class="[
           'absolute top-4 right-4 z-10 px-3 py-1 rounded-full text-md font-semibold shadow-md transition-all duration-300 cursor-pointer',
           isFavorite

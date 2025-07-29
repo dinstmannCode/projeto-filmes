@@ -22,12 +22,18 @@ class MovieController extends Controller
      */
     public function index(): JsonResponse
     {
-        $movies = $this->tmdbService->getPopularMovies(1);
+        $movies = $this->tmdbService->getPopularMovies();
 
         if (empty($movies)) {
             return response()->json(['message' => 'No movies found'], 404);
         }
-        
+
+        return response()->json($movies);
+    }
+
+    public function popularWithFavorites()
+    {
+        $movies = $this->tmdbService->getPopularMoviesWithFavorites();
         return response()->json($movies);
     }
 }

@@ -1,18 +1,14 @@
 <template>
   <Navbar v-model="searchQuery" />
   <div class="max-w-7xl mx-auto px-4 py-4 pt-28">
-    <div v-if="filteredMovies.length === 0" class="text-center text-gray-400 mt-10">
+
+    <div v-if="!loading && filteredMovies.length === 0" class="text-center text-gray-400 mt-10">
       Nenhum filme encontrado! Que tal procurar outro título?
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
-      <MovieCard
-        v-for="movie in filteredMovies"
-        :key="movie.id"
-        :movie="movie"
-        :isFavorite="isInFavorites(movie.id)"
-        @favorite="addToFavorites"
-      />
+      <MovieCard v-for="movie in filteredMovies" :key="movie.id" :movie="movie" :isFavorite="movie.is_favorite"
+        @favorite="addToFavorites" />
     </div>
 
     <div v-if="loading" class="text-center text-purple-400 mt-6 animate-pulse">
@@ -25,13 +21,12 @@
 import Navbar from '../components/Navbar.vue'
 import MovieCard from '../components/MovieCard.vue'
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { fetchPopularMovies, addFavoriteMovie, getFavoriteMovies } from '../services/api'
+import { fetchPopularMoviesWithFavoriteStatus, addFavoriteMovie } from '../services/api'
 
 const searchQuery = ref('')
 const movies = ref([])
 const page = ref(1)
 const loading = ref(false)
-const favorites = ref([]) 
 
 const filteredMovies = computed(() => {
   if (!searchQuery.value) return movies.value
@@ -43,45 +38,58 @@ const filteredMovies = computed(() => {
 const fetchMovies = async () => {
   if (loading.value) return
   loading.value = true
-  const newMovies = await fetchPopularMovies(page.value)
+  const newMovies = await fetchPopularMoviesWithFavoriteStatus(page.value)
   movies.value.push(...newMovies)
   page.value++
   loading.value = false
-}
 
-const fetchFavorites = async () => {
-  try {
-    favorites.value = await getFavoriteMovies()
-  } catch (error) {
-    console.error('Erro ao carregar favoritos:', error)
-  }
+  const uniqueMovies = new Map()
+
+  movies.value = [...movies.value, ...newMovies].filter(movie => {
+    if (uniqueMovies.has(movie.id)) return false
+    uniqueMovies.set(movie.id, true)
+    return true
+  })
 }
 
 const addToFavorites = async (movie) => {
+  console.log('Adicionando filme aos favoritos:', movie)
   try {
+    const genreIds = Array.isArray(movie.genre_ids) ? movie.genre_ids : []
+    const genresArray = Array.isArray(movie.genres)
+      ? movie.genres
+      : typeof movie.genres === 'string'
+        ? movie.genres.split(',').map(s => s.trim())
+        : []
+
+    if (!genreIds.length && !genresArray.length) {
+      console.warn(`Filme "${movie.title}" não possui gêneros válidos, ignorando...`)
+      return
+    }
+
     await addFavoriteMovie({
-      tmdb_id: movie.id.toString(),
+      tmdb_id: movie.id,
       title: movie.title,
       poster_path: movie.poster_path,
       vote_average: movie.vote_average,
+      genre_ids: genreIds,
+      genres: genresArray
     })
-    await fetchFavorites() 
-    console.log('Favorito adicionado com sucesso')
+
+    const index = movies.value.findIndex(m => m.id === movie.id)
+    if (index !== -1) {
+      movies.value[index].is_favorite = true
+    }
   } catch (error) {
     console.error('Erro ao adicionar favorito:', error)
   }
 }
 
-const isInFavorites = (id) => {
-  return favorites.value.some(fav => fav.tmdb_id === id.toString())
-}
 
 onMounted(async () => {
-  favorites.value = await getFavoriteMovies();
-  await fetchMovies();
-  window.addEventListener('scroll', handleScroll);
-});
-
+  await fetchMovies()
+  window.addEventListener('scroll', handleScroll)
+})
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
